@@ -18,17 +18,24 @@ function CambiarColor(elemento){
 
 
 function CaidaDeDulces(){
+  
   for (var i = 1; i <8; i++) {
-    for (var j = 0; j < 7; j++) {
+    for (var j = 1; j < 8; j++) {
       var tipoDulce= Math.floor((Math.random() * 4) + 1);
+      var fila = "<div class='row-"+j+"'></div>";
       var elementoImg=document.createElement('img')
-      $(".col-"+i)[0].append(elementoImg)
+      $(".col-"+i).append(elementoImg)
+      //$(fila).addClass('row-'+j)
+      //$(".row-"+j).append(elementoImg)
       $(elementoImg).addClass('elemento')
       $(elementoImg).attr('src',"image/"+tipoDulce+".png")
+
+      
      }
   }
   agregarDulcesEvents();
-  HacerJugada();
+  HacerJugadaVertical();
+  HacerJugadaHorizontal();
 }
 
 function agregarDulcesEvents() {
@@ -45,7 +52,8 @@ function agregarDulcesEvents() {
     //.draggable("destroy")
     drop: moverDulce
   });
- HacerJugada();
+ HacerJugadaVertical();
+ HacerJugadaHorizontal();
 //enableCandyEvents();
 }
 
@@ -59,7 +67,8 @@ function moverDulce(event, candyDrag)
   candyDrop.attr('src', dragSrc);
 
   setTimeout(function () {
-    HacerJugada();
+    HacerJugadaVertical();
+    HacerJugadaHorizontal();
     actualizarMovimientos();
     /*if ($('img.delete').length === 0) {
       candyDrag.attr('src', dragSrc);
@@ -92,47 +101,90 @@ function constrainCandyMovement(event, candyDrag) {
 }
       
 
-function HacerJugada()
+function HacerJugadaVertical()
 {
-  var eliminados = new Array();
+  var eliminados = 0
   for (var x = 1; x <8; x++) {
-    var veces=0;
+    var vecesVertical=0;
     var dulceAnterior="";
-    var imgMostradas = new Array();
+    var imagenesEliminar = new Array();
     for (var y = 0; y < 7; y++) {
       var dulce= $(".col-"+x).children('img')[y].src;
       if (dulce==dulceAnterior ) {
-        veces+=1;
-        if (veces==1) {
-          imgMostradas[1]=$(".col-"+x).children('img')[y-1];
+        vecesVertical+=1;
+        if (vecesVertical==1) {
+          imagenesEliminar[1]=$(".col-"+x).children('img')[y-1];
         }
-        imgMostradas[veces+1]=$(".col-"+x).children('img')[y];
+        imagenesEliminar[vecesVertical+1]=$(".col-"+x).children('img')[y];
       }
-      else if (dulce!=dulceAnterior && veces<2){
-        veces=0;
-        imgMostradas = new Array();
+      else if (dulce!=dulceAnterior && vecesVertical<2){
+        vecesVertical=0;
+        imagenesEliminar = new Array();
       }
       var dulceAnterior = dulce;
     }
 
-    if (veces>=2){
+    if (vecesVertical>=2){
       /*Borrar los dulces*/
-      for (var i = 1; i <= veces+1; i++) {
-        /*imgMostradas[i].animate({
+      for (var i = 1; i <= vecesVertical+1; i++) {
+        /*imagenesEliminar[i].animate({
           width: "-=60", height: "-=20"},
           {
             duration : 1000,
             complete: function(){
-              //imgMostradas[i].remove();
+              imagenesEliminar[i].remove();
+              eliminados += imagenesEliminar.length;
             }
           })*/
-        imgMostradas[i].remove();
-        eliminados += imgMostradas.length;
+        imagenesEliminar[i].remove();
+        eliminados += 1;
       };
-      actualizaPuntuacion(imgMostradas.length);
+      actualizaPuntuacion(imagenesEliminar.length);
     }; 
+    
   }
-  if (eliminados>1) {LlenarEspaciosVacios();};
+  if (eliminados>1) {
+    LlenarEspaciosVacios();
+  };
+  
+  //fin de funcion
+}
+
+function HacerJugadaHorizontal()
+{
+  var eliminadosX = 0
+  for (var x = 1; x < 8; x++) {
+    var vecesHorizontal=0;
+    var dulceAnteriorX="";
+    var imagenesEliminarX = new Array();
+    var z=0
+    for (var y = 0; y < 7; y++) {
+      z+=1
+      var dulceX = $(".col-"+z).children('img')[x-1].src;
+      if (dulceX==dulceAnteriorX) {
+        vecesHorizontal+=1;
+        if (vecesHorizontal==1) {
+          var anterior = z-1
+          imagenesEliminarX[1]=$(".col-"+anterior).children('img')[x-1];
+        }
+        imagenesEliminarX[vecesHorizontal+1]=$(".col-"+z).children('img')[x-1]
+
+      } else if (dulceX!=dulceAnteriorX && vecesHorizontal<2){
+        vecesHorizontal=0;
+        imagenesEliminarX = new Array();
+      };
+     var dulceAnteriorX = dulceX;
+    };
+    if (vecesHorizontal>=2){
+      /*Borrar los dulces*/
+      for (var h = 1; h <= vecesHorizontal+1; h++) {
+        imagenesEliminarX[h].remove();
+        eliminadosX += 1;
+      }
+      actualizaPuntuacion(imagenesEliminarX.length);
+    }; 
+    if (eliminadosX>1) {LlenarEspaciosVacios();};
+  };
   
 }
 
@@ -143,7 +195,7 @@ function LlenarEspaciosVacios()
     for (var j = 0; j < hijos; j++) {
       var tipoDulce= Math.floor((Math.random() * 4) + 1);
       var elementoImg=document.createElement('img')
-      $(".col-"+i).append(elementoImg)
+      $(".col-"+i).prepend(elementoImg)
       $(elementoImg).addClass('elemento')
       $(elementoImg).attr('src',"image/"+tipoDulce+".png")
     };
@@ -205,3 +257,4 @@ $(".btn-reinicio").on("click", function(){
   updateReloj();
   CaidaDeDulces();
 });
+
